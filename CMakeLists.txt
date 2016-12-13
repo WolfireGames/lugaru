@@ -32,6 +32,15 @@ if(APPLE)
         "The product will be built against the headers and libraries located inside the indicated SDK.")
 endif(APPLE)
 
+option(BUILD_SERVER "Build server" Off)
+option(DO_DIST_ARCHIVE "Generate dist archive" Off)
+option(PERFORM_INSTALL "Generate steps for installation into system" On)
+
+IF(BUILD_SERVER)
+    SET(DO_DIST_ARCHIVE On)
+    SET(PERFORM_INSTALL Off)
+ENDIF()
+
 if(LINUX)
     option(SYSTEM_INSTALL "Enable system-wide installation, with hardcoded data directory defined with CMAKE_INSTALL_DATADIR" OFF)
 endif(LINUX)
@@ -219,81 +228,146 @@ endif(WIN32)
 
 
 ### Installation
+# We don't care about installing in our version
 
-if(NOT CMAKE_INSTALL_PREFIX AND WIN32)
-    set(CMAKE_INSTALL_PREFIX "C:/Lugaru")
-endif(NOT CMAKE_INSTALL_PREFIX AND WIN32)
+if(PERFORM_INSTALL)
+    if(NOT CMAKE_INSTALL_PREFIX AND WIN32)
+        set(CMAKE_INSTALL_PREFIX "C:/Lugaru")
+    endif(NOT CMAKE_INSTALL_PREFIX AND WIN32)
 
-# OS-specific installation paths
+    # OS-specific installation paths
 
-set(LUGARU_DOCDIR ${CMAKE_INSTALL_PREFIX})
-if(LINUX)
-endif(LINUX)
+    set(LUGARU_DOCDIR ${CMAKE_INSTALL_PREFIX})
+    if(LINUX)
+    endif(LINUX)
 
-if(APPLE)
-    set(LUGARU_APP_ROOT ${CMAKE_INSTALL_PREFIX}/Lugaru.app)
-    set(LUGARU_BINDIR ${LUGARU_APP_ROOT}/Contents/MacOS)
-    set(LUGARU_RESDIR ${LUGARU_APP_ROOT}/Resources)
-endif(APPLE)
+    if(APPLE)
+        set(LUGARU_APP_ROOT ${CMAKE_INSTALL_PREFIX}/Lugaru.app)
+        set(LUGARU_BINDIR ${LUGARU_APP_ROOT}/Contents/MacOS)
+        set(LUGARU_RESDIR ${LUGARU_APP_ROOT}/Resources)
+    endif(APPLE)
 
-# Actual installation instructions
+    # Actual installation instructions
 
-if(WIN32)
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/lugaru.exe DESTINATION ${CMAKE_INSTALL_PREFIX})
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/Data DESTINATION ${CMAKE_INSTALL_PREFIX})
-    if(MINGW)
-        # Based off Mageia/Fedora MinGW toolchain, might not work on other distros or Windows
-        set(LIBGCC_S libgcc_s_sjlj-1.dll)
-        if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64") # MinGW64
-            set(LIBGCC_S libgcc_s_seh-1.dll)
-        endif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-        # FIXME: Filter out unneeded DLLs when building against some internal deps
-        set(DLL_ROOT ${CMAKE_FIND_ROOT_PATH}/bin)
-        install(FILES ${DLL_ROOT}/${LIBGCC_S}
-                      ${DLL_ROOT}/libjpeg-62.dll
-                      ${DLL_ROOT}/libogg-0.dll
-                      ${DLL_ROOT}/libpng16-16.dll
-                      ${DLL_ROOT}/libstdc++-6.dll
-                      ${DLL_ROOT}/libvorbis-0.dll
-                      ${DLL_ROOT}/libvorbisfile-3.dll
-                      ${DLL_ROOT}/libwinpthread-1.dll
-                      ${DLL_ROOT}/OpenAL32.dll
-                      ${DLL_ROOT}/SDL2.dll
-                      ${DLL_ROOT}/zlib1.dll
-                DESTINATION ${CMAKE_INSTALL_PREFIX})
-    endif(MINGW)
-endif(WIN32)
-
-if(LINUX)
-    if(SYSTEM_INSTALL)
-        add_definitions(-DDATA_DIR="${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT_NAME}")
-        set(LUGARU_DOCDIR ${CMAKE_INSTALL_DOCDIR})
-        install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/lugaru DESTINATION ${CMAKE_INSTALL_BINDIR})
-        # Trailing '/' is significant, it installs and _renames_ Data/ as the destination folder
-        install(DIRECTORY ${CMAKE_SOURCE_DIR}/Data/ DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME})
-        install(FILES ${CMAKE_SOURCE_DIR}/Dist/lugaru.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/appdata)
-        install(FILES ${CMAKE_SOURCE_DIR}/Dist/lugaru.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
-        install(FILES ${CMAKE_SOURCE_DIR}/Dist/lugaru.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/128x128/apps)
-        install(FILES ${CMAKE_SOURCE_DIR}/Dist/lugaru.6 DESTINATION ${CMAKE_INSTALL_MANDIR}/man6)
-    else(SYSTEM_INSTALL)
-        message("You are building Lugaru without having enabled the SYSTEM_INSTALL option. It will default to looking for the data in the 'Data' directory next to the binary.")
-        install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/lugaru DESTINATION ${CMAKE_INSTALL_PREFIX})
+    if(WIN32)
+        install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/lugaru.exe DESTINATION ${CMAKE_INSTALL_PREFIX})
         install(DIRECTORY ${CMAKE_SOURCE_DIR}/Data DESTINATION ${CMAKE_INSTALL_PREFIX})
-    endif(SYSTEM_INSTALL)
-endif(LINUX)
+        if(MINGW)
+            # Based off Mageia/Fedora MinGW toolchain, might not work on other distros or Windows
+            set(LIBGCC_S libgcc_s_sjlj-1.dll)
+            if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64") # MinGW64
+                set(LIBGCC_S libgcc_s_seh-1.dll)
+            endif(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+            # FIXME: Filter out unneeded DLLs when building against some internal deps
+            set(DLL_ROOT ${CMAKE_FIND_ROOT_PATH}/bin)
+            install(FILES ${DLL_ROOT}/${LIBGCC_S}
+                          ${DLL_ROOT}/libjpeg-62.dll
+                          ${DLL_ROOT}/libogg-0.dll
+                          ${DLL_ROOT}/libpng16-16.dll
+                          ${DLL_ROOT}/libstdc++-6.dll
+                          ${DLL_ROOT}/libvorbis-0.dll
+                          ${DLL_ROOT}/libvorbisfile-3.dll
+                          ${DLL_ROOT}/libwinpthread-1.dll
+                          ${DLL_ROOT}/OpenAL32.dll
+                          ${DLL_ROOT}/SDL2.dll
+                          ${DLL_ROOT}/zlib1.dll
+                    DESTINATION ${CMAKE_INSTALL_PREFIX})
+        endif(MINGW)
+    endif(WIN32)
 
-if(APPLE)
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/lugaru DESTINATION ${LUGARU_BINDIR})
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/Data DESTINATION ${LUGARU_APP_ROOT})
-    install(FILES ${CMAKE_SOURCE_DIR}/Dist/OSX/Lugaru.icns DESTINATION ${LUGARU_RESDIR})
-    install(FILES ${CMAKE_SOURCE_DIR}/Dist/OSX/Info.plist DESTINATION ${LUGARU_APP_ROOT}/Contents)
-endif(APPLE)
+    if(LINUX)
+        if(SYSTEM_INSTALL)
+            add_definitions(-DDATA_DIR="${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT_NAME}")
+            set(LUGARU_DOCDIR ${CMAKE_INSTALL_DOCDIR})
+            install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/lugaru DESTINATION ${CMAKE_INSTALL_BINDIR})
+            # Trailing '/' is significant, it installs and _renames_ Data/ as the destination folder
+            install(DIRECTORY ${CMAKE_SOURCE_DIR}/Data/ DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME})
+            install(FILES ${CMAKE_SOURCE_DIR}/Dist/lugaru.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/appdata)
+            install(FILES ${CMAKE_SOURCE_DIR}/Dist/lugaru.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
+            install(FILES ${CMAKE_SOURCE_DIR}/Dist/lugaru.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/128x128/apps)
+            install(FILES ${CMAKE_SOURCE_DIR}/Dist/lugaru.6 DESTINATION ${CMAKE_INSTALL_MANDIR}/man6)
+        else(SYSTEM_INSTALL)
+            message("You are building Lugaru without having enabled the SYSTEM_INSTALL option. It will default to looking for the data in the 'Data' directory next to the binary.")
+            install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/lugaru DESTINATION ${CMAKE_INSTALL_PREFIX})
+            install(DIRECTORY ${CMAKE_SOURCE_DIR}/Data DESTINATION ${CMAKE_INSTALL_PREFIX})
+        endif(SYSTEM_INSTALL)
+    endif(LINUX)
 
-# Documentation
+    if(APPLE)
+        install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/lugaru DESTINATION ${LUGARU_BINDIR})
+        install(DIRECTORY ${CMAKE_SOURCE_DIR}/Data DESTINATION ${LUGARU_APP_ROOT})
+        install(FILES ${CMAKE_SOURCE_DIR}/Dist/OSX/Lugaru.icns DESTINATION ${LUGARU_RESDIR})
+        install(FILES ${CMAKE_SOURCE_DIR}/Dist/OSX/Info.plist DESTINATION ${LUGARU_APP_ROOT}/Contents)
+    endif(APPLE)
 
-install(FILES ${CMAKE_SOURCE_DIR}/AUTHORS
-              ${CMAKE_SOURCE_DIR}/CONTENT-LICENSE.txt
-              ${CMAKE_SOURCE_DIR}/COPYING.txt
-              ${CMAKE_SOURCE_DIR}/DEVTOOLS.txt
-              ${CMAKE_SOURCE_DIR}/README.md
-        DESTINATION ${LUGARU_DOCDIR})
+    # Documentation
+
+    install(FILES ${CMAKE_SOURCE_DIR}/AUTHORS
+                  ${CMAKE_SOURCE_DIR}/CONTENT-LICENSE.txt
+                  ${CMAKE_SOURCE_DIR}/COPYING.txt
+                  ${CMAKE_SOURCE_DIR}/DEVTOOLS.txt
+                  ${CMAKE_SOURCE_DIR}/README.md
+            DESTINATION ${LUGARU_DOCDIR})
+endif(PERFORM_INSTALL)
+
+# Generate an archive with the entire game for redist.
+IF(DO_DIST_ARCHIVE)
+    SET(DIST_ARCHIVE "${CMAKE_BINARY_DIR}/Lugaru.tar" CACHE STRING "Name of packaged file containing game binaries")
+    IF(LINUX)
+        ADD_CUSTOM_TARGET( GenerateDistArchive ALL 
+            COMMAND "tar" "-chf" "\"${DIST_ARCHIVE}\"" 
+              "lugaru" 
+              "Data/"
+            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+        )
+        ADD_CUSTOM_TARGET( GenerateDistArchive2 ALL
+            COMMAND "tar" "-rhf" "\"${DIST_ARCHIVE}\"" 
+              "AUTHORS"
+              "CONTENT-LICENSE.txt"
+              "COPYING.txt"
+              "DEVTOOLS.txt"
+              "README.md"
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        )
+        ADD_DEPENDENCIES( GenerateDistArchive2
+                            GenerateDistArchive
+        )
+    ENDIF()
+    IF(APPLE)
+#        ADD_CUSTOM_TARGET( CreateDistArchive ALL 
+#            COMMAND "mkdir" "-p" "Package"
+#            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+#        )
+#        ADD_CUSTOM_TARGET( CopyDistArchive ALL 
+#            COMMAND "cp" "-av" "\"$<TARGET_FILE_DIR:Lugaru>/Lugaru.app\"" "Package/"
+#            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+#        )
+#        ADD_DEPENDENCIES( CopyDistArchive
+#            CreateDistArchive
+#        )
+#        ADD_CUSTOM_TARGET( GenerateDistArchive ALL 
+#            COMMAND "tar" "-cvhf" "\"${DIST_ARCHIVE}\"" "Lugaru.app"
+#            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/Package"
+#        )
+#        ADD_DEPENDENCIES( GenerateDistArchive
+#            CopyDistArchive
+#        )
+#        ADD_CUSTOM_TARGET( ClearDistArchive ALL 
+#            COMMAND "rm" "-rf" "Package/Lugaru.app"
+#            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+#        )
+#        ADD_DEPENDENCIES( ClearDistArchive
+#            GenerateDistArchive
+#        )
+    ENDIF()
+    IF(WIN32)
+#	    FIND_PROGRAM(SEVEN_ZIP NAMES 7z PATHS "C:/Program Files/7-Zip")
+#        ADD_CUSTOM_TARGET( GenerateDistArchive ALL 
+#            COMMAND ${SEVEN_ZIP} "a" "-mTAR" "\"${DIST_ARCHIVE}\"" "./"
+#            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${WIN32_DIST_FOLDER}"
+#        )
+    ENDIF()
+    ADD_DEPENDENCIES( GenerateDistArchive
+        lugaru
+    )
+ENDIF()
