@@ -23,7 +23,7 @@ along with Lugaru.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "Game.hpp"
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 /**> CONSTANT DECLARATIONS <**/
 #define MOUSEBUTTON1 (SDL_NUM_SCANCODES + SDL_BUTTON_LEFT)
