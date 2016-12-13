@@ -334,31 +334,47 @@ IF(DO_DIST_ARCHIVE)
         )
     ENDIF()
     IF(APPLE)
-#        ADD_CUSTOM_TARGET( CreateDistArchive ALL 
-#            COMMAND "mkdir" "-p" "Package"
-#            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-#        )
-#        ADD_CUSTOM_TARGET( CopyDistArchive ALL 
-#            COMMAND "cp" "-av" "\"$<TARGET_FILE_DIR:Lugaru>/Lugaru.app\"" "Package/"
-#            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-#        )
-#        ADD_DEPENDENCIES( CopyDistArchive
-#            CreateDistArchive
-#        )
-#        ADD_CUSTOM_TARGET( GenerateDistArchive ALL 
-#            COMMAND "tar" "-cvhf" "\"${DIST_ARCHIVE}\"" "Lugaru.app"
-#            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/Package"
-#        )
-#        ADD_DEPENDENCIES( GenerateDistArchive
-#            CopyDistArchive
-#        )
-#        ADD_CUSTOM_TARGET( ClearDistArchive ALL 
-#            COMMAND "rm" "-rf" "Package/Lugaru.app"
-#            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-#        )
-#        ADD_DEPENDENCIES( ClearDistArchive
-#            GenerateDistArchive
-#        )
+	 SET( APPLE_APP_FOLDER "${CMAKE_BINARY_DIR}/Lugaru.app" )
+
+	 ADD_CUSTOM_TARGET( CreateMacOSXAppStructure ALL
+             COMMAND "mkdir" "-p" "${APPLE_APP_FOLDER}"
+             COMMAND "mkdir" "-p" "${APPLE_APP_FOLDER}/Contents"
+             COMMAND "mkdir" "-p" "${APPLE_APP_FOLDER}/Contents/MacOS"
+             COMMAND "mkdir" "-p" "${APPLE_APP_FOLDER}/Contents/Resources"
+             WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+	)
+
+	ADD_CUSTOM_TARGET( MacOSXAppAddBinary ALL
+	     COMMAND "cp" "lugaru" "${APPLE_APP_FOLDER}/Contents/MacOS/"
+             WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+	)
+	
+        ADD_DEPENDENCIES( MacOSXAppAddBinary
+             CreateMacOSXAppStructure
+        )
+
+	ADD_CUSTOM_TARGET( MacOSXAppAddData ALL
+	     COMMAND "cp" "-r" "Data" "${APPLE_APP_FOLDER}/Data"
+	     COMMAND "cp" "Dist/OSX/Info.plist" "${APPLE_APP_FOLDER}/Contents/"
+	     COMMAND "cp" "Dist/OSX/Lugaru.icns" "${APPLE_APP_FOLDER}/Contents/Resources/"
+             WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+	)
+
+        ADD_DEPENDENCIES( MacOSXAppAddData
+             CreateMacOSXAppStructure
+        )
+
+        ADD_CUSTOM_TARGET( GenerateDistArchive ALL 
+            COMMAND "tar" "-chf" "\"${DIST_ARCHIVE}\"" "Lugaru.app"
+            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+        )
+
+        ADD_DEPENDENCIES( GenerateDistArchive
+             CreateMacOSXAppStructure
+             MacOSXAppAddData
+             MacOSXAppAddBinary
+        )
+
     ENDIF()
     IF(WIN32)
 #	    FIND_PROGRAM(SEVEN_ZIP NAMES 7z PATHS "C:/Program Files/7-Zip")
