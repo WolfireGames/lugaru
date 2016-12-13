@@ -26,9 +26,9 @@ set(CMAKE_CXX_FLAGS "-Wall -Wno-parentheses -pedantic --std=gnu++11 ${CMAKE_CXX_
 
 if(APPLE)
     set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for OSX")
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.11" CACHE STRING
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING
         "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked. Set to empty string for default value")
-    set(CMAKE_OSX_SYSROOT "/Developer/SDKs/MacOSX10.11.sdk" CACHE PATH
+    set(CMAKE_OSX_SYSROOT "/Developer/SDKs/MacOSX10.9.sdk" CACHE PATH
         "The product will be built against the headers and libraries located inside the indicated SDK.")
 endif(APPLE)
 
