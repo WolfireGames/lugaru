@@ -173,17 +173,13 @@ else(WIN32)
     find_package(OpenAL REQUIRED)
 endif(WIN32)
 
-# macOS has problems with using pkgconfig to find SDL2
-if(APPLE)
-    find_package(sdl2 REQUIRED)
-else(APPLE)
-    pkg_check_modules(SDL2 sdl2 REQUIRED)
-endif(APPLE)
-
+find_package(SDL2 REQUIRED)
 find_package(PNG REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(OggVorbis REQUIRED)
+
+message("SDL include dir ${SDL2_INCLUDE_DIR}" )
 
 include_directories(
     ${OPENAL_INCLUDE_DIR}
@@ -191,13 +187,15 @@ include_directories(
     ${PNG_INCLUDE_DIR}
     ${ZLIB_INCLUDE_DIR}
     ${OPENGL_INCLUDE_DIR}
-    ${SDL2_INCLUDE_DIRS}
+    ${SDL2_INCLUDE_DIR}
     ${VORBISFILE_INCLUDE_DIR}
     ${OGG_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/Source
 )
 
-set(LUGARU_LIBS ${OPENAL_LIBRARY} ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_LIBRARIES} ${OPENGL_LIBRARIES} ${VORBISFILE_LIBRARY} ${OGG_LIBRARY} ${PLATFORM_LIBS})
+message( "SDL LIB ${SDL2_LIBRARY}" )
+
+set(LUGARU_LIBS ${OPENAL_LIBRARY} ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_LIBRARY} ${OPENGL_LIBRARIES} ${VORBISFILE_LIBRARY} ${OGG_LIBRARY} ${PLATFORM_LIBS})
 
 
 ### Definitions

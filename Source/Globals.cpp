@@ -22,7 +22,7 @@ along with Lugaru.  If not, see <http://www.gnu.org/licenses/>.
 #include "Math/Quaternions.hpp"
 #include "Objects/Weapons.hpp"
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <string>
 
 bool visibleloading = 0;

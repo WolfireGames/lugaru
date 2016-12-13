@@ -41,7 +41,7 @@ along with Lugaru.  If not, see <http://www.gnu.org/licenses/>.
 #include "Utils/ImageIO.hpp"
 
 #include <fstream>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #define NB_CAMPAIGN_MENU_ITEM 7
 
