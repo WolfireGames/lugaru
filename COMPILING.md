@@ -58,7 +58,19 @@ Help needed :)
 
 ### MinGW on Windows
 
-Help needed :)
+To compile you need to compile and install OpenAL Soft as a DLL
+
+You need to compile the following as static libs (in the mingw env)
+- LibJPEG (TurboJPEG)
+- LibPNG
+- Ogg, Vorbis and Vorbisfile
+- Zlib
+
+Then you need to install SDL2 into the folder C:\SDL2\
+
+You do this by renaming and placing the folder with the version info embedded.
+See cmake/Modules/FindSDL2.cmake to get an idea of where it looks. Also the bundling assumes that the DLL is placed there.
+
 
 ### Cross-compiling from Linux
 

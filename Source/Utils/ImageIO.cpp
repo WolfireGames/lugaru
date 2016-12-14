@@ -23,10 +23,18 @@ along with Lugaru.  If not, see <http://www.gnu.org/licenses/>.
 #include "Game.hpp"
 #include "Utils/Folders.hpp"
 
-#include <jpeglib.h>
-#include <png.h>
 #include <stdio.h>
+
+#include <png.h>
 #include <zlib.h>
+
+#if defined(MINGW) && defined(WINDOWS)
+#define XMD_H
+#include <jpeglib.h>
+#undef XMD_h
+#else
+#include <jpeglib.h>
+#endif
 
 extern bool visibleloading;
 
