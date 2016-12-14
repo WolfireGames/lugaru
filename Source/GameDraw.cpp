@@ -26,6 +26,7 @@ along with Lugaru.  If not, see <http://www.gnu.org/licenses/>.
 #include "Level/Hotspot.hpp"
 #include "Menu/Menu.hpp"
 #include "Utils/Input.hpp"
+#include "Utils/String.hpp"
 
 extern XYZ viewer;
 extern int environment;
@@ -572,7 +573,7 @@ int Game::DrawGLScene(StereoSide side)
                     glColor4f(1, 0, 0, 1 - bonustime);
                     text->glPrint(1024 / 2 - 10 * strlen(bonus_name), 768 / 16 + 768 * 4 / 5, bonus_name, 1, 2, 1024, 768);
 
-                    string = to_string((int)bonusvalue);
+                    string = rep_to_string((int)bonusvalue);
                     glColor4f(0, 0, 0, 1 - bonustime);
                     text->glPrintOutline(1024 / 2 - 10 * string.size() - 4, 768 / 16 - 4 - 20 + 768 * 4 / 5, string, 1, 2.5 * .8, 1024, 768);
                     glColor4f(1, 0, 0, 1 - bonustime);
@@ -770,7 +771,7 @@ int Game::DrawGLScene(StereoSide side)
                     string3 = "this is especially important against armed opponents.";
                 }
                 if (tutorialstage == 32) {
-                    string = "The enemy can attack in " + to_string(int(tutorialmaxtime - tutorialstagetime)) + " seconds.";
+                    string = "The enemy can attack in " + rep_to_string(int(tutorialmaxtime - tutorialstagetime)) + " seconds.";
                     string2 = "This imaginary opponents attacks will be highlighted";
                     string3 = "to make this easier.";
                 }
@@ -795,9 +796,9 @@ int Game::DrawGLScene(StereoSide side)
                     string3 = " ";
                 }
                 if (tutorialstage == 37) {
-                    string = "Now spar with the enemy for " + to_string(int(tutorialmaxtime - tutorialstagetime)) + " more seconds.";
-                    string2 = "Damage dealt: " + to_string(int(damagedealt));
-                    string3 = "Damage taken: " + to_string(int(damagetaken));
+                    string = "Now spar with the enemy for " + rep_to_string(int(tutorialmaxtime - tutorialstagetime)) + " more seconds.";
+                    string2 = "Damage dealt: " + rep_to_string(int(damagedealt));
+                    string3 = "Damage taken: " + rep_to_string(int(damagetaken));
                 }
                 if (tutorialstage == 38) {
                     string = "WEAPONS:";
@@ -1061,12 +1062,12 @@ int Game::DrawGLScene(StereoSide side)
             if (!tutoriallevel && !winfreeze && !Dialog::inDialog() && !mainmenu) {
                 if (campaign) {
                     if (scoreadded) {
-                        string = "Score: " + to_string(int(Account::active().getCampaignScore()));
+                        string = "Score: " + rep_to_string(int(Account::active().getCampaignScore()));
                     } else {
-                        string = "Score: " + to_string(int(Account::active().getCampaignScore() + bonustotal));
+                        string = "Score: " + rep_to_string(int(Account::active().getCampaignScore() + bonustotal));
                     }
                 } else {
-                    string = "Score: " + to_string(int(bonustotal));
+                    string = "Score: " + rep_to_string(int(bonustotal));
                 }
                 glColor4f(0, 0, 0, 1);
                 text->glPrintOutline(1024 / 40 - 4, 768 / 16 - 4 + 768 * 14 / 16, string, 1, 1.5 * 1.25, 1024, 768);
@@ -1150,7 +1151,7 @@ int Game::DrawGLScene(StereoSide side)
                     glEnable(GL_TEXTURE_2D);
 
                     // writing the numbers :
-                    string = "Damages : " + to_string(int(Person::players[0]->damage)) + "/" + to_string(int(Person::players[0]->damagetolerance)) + " (" + to_string(int(Person::players[0]->bloodloss)) + ")";
+                    string = "Damages : " + rep_to_string(int(Person::players[0]->damage)) + "/" + rep_to_string(int(Person::players[0]->damagetolerance)) + " (" + rep_to_string(int(Person::players[0]->bloodloss)) + ")";
                     glColor4f(0, 0, 0, 1);
                     text->glPrintOutline(1024 / 40 - 4, 768 / 16 - 4 + 768 * 14 / 16 - 40, string, 1, 1.5 * 1.25, 1024, 768);
                     glColor4f(1, 0, 0, 1);
@@ -1162,7 +1163,7 @@ int Game::DrawGLScene(StereoSide side)
 
 
             if ((texttoggle || editorenabled) && devtools && !mainmenu) {
-                string = "The framespersecond is " + to_string(int(fps));
+                string = "The framespersecond is " + rep_to_string(int(fps));
                 text->glPrint(10, 30, string, 0, .8, 1024, 768);
 
                 if (editorenabled) {
@@ -1172,21 +1173,21 @@ int Game::DrawGLScene(StereoSide side)
                 }
                 text->glPrint(10, 60, string, 0, .8, 1024, 768);
                 if (editorenabled) {
-                    string = "Object size: " + to_string(editorsize);
+                    string = "Object size: " + rep_to_string(editorsize);
                     text->glPrint(10, 75, string, 0, .8, 1024, 768);
                     if (editoryaw >= 0) {
-                        string = "Object yaw: " + to_string(editoryaw);
+                        string = "Object yaw: " + rep_to_string(editoryaw);
                     } else {
                         string = "Object yaw: Random";
                     }
                     text->glPrint(10, 90, string, 0, .8, 1024, 768);
                     if (editorpitch >= 0) {
-                        string = "Object pitch: " + to_string(editorpitch);
+                        string = "Object pitch: " + rep_to_string(editorpitch);
                     } else {
                         string = "Object pitch: Random";
                     }
                     text->glPrint(10, 105, string, 0, .8, 1024, 768);
-                    string = "Object type: " + to_string(editortype);
+                    string = "Object type: " + rep_to_string(editortype);
                     text->glPrint(10, 120, string, 0, .8, 1024, 768);
                     switch (editortype) {
                     case boxtype:
@@ -1228,12 +1229,12 @@ int Game::DrawGLScene(StereoSide side)
                     }
                     text->glPrint(130, 120, string, 0, .8, 1024, 768);
 
-                    string = "Numplayers: " + to_string(Person::players.size());
+                    string = "Numplayers: " + rep_to_string(Person::players.size());
                     text->glPrint(10, 155, string, 0, .8, 1024, 768);
-                    string = "Player " + to_string(int(Person::players.size()) - 1) + ": numwaypoints: " + to_string(Person::players.back()->numwaypoints);
+                    string = "Player " + rep_to_string(int(Person::players.size()) - 1) + ": numwaypoints: " + rep_to_string(Person::players.back()->numwaypoints);
                     text->glPrint(10, 140, string, 0, .8, 1024, 768);
                 }
-                string = "Difficulty: " + to_string(difficulty);
+                string = "Difficulty: " + rep_to_string(difficulty);
                 text->glPrint(10, 240, string, 0, .8, 1024, 768);
 
             }
@@ -1621,18 +1622,18 @@ int Game::DrawGLScene(StereoSide side)
             string = "Level Cleared!";
             text->glPrintOutlined(1024 / 2 - string.size() * 10, 768 * 7 / 8, string, 1, 2, 1024, 768);
 
-            string = "Score:     " + to_string(int(bonustotal - startbonustotal));
+            string = "Score:     " + rep_to_string(int(bonustotal - startbonustotal));
             text->glPrintOutlined(1024 / 30, 768 * 6 / 8, string, 1, 2, 1024, 768);
 
             string = "Press Escape to return to menu or Space to continue";
             text->glPrintOutlined(640 / 2 - string.size() * 5, 480 * 1 / 16, string, 1, 1, 640, 480);
 
             int wontime = (int)round(wonleveltime);
-            string = "Time:      " + to_string(int((wontime - wontime % 60) / 60));
+            string = "Time:      " + rep_to_string(int((wontime - wontime % 60) / 60));
             if (wontime % 60 < 10) {
                 string += "0";
             }
-            string += to_string(int(wontime % 60));
+            string += rep_to_string(int(wontime % 60));
             text->glPrintOutlined(1024 / 30, 768 * 6 / 8 - 40, string, 1, 2, 1024, 768);
 
             //Awards

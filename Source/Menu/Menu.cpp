@@ -25,6 +25,7 @@ along with Lugaru.  If not, see <http://www.gnu.org/licenses/>.
 #include "Level/Campaign.hpp"
 #include "User/Settings.hpp"
 #include "Utils/Input.hpp"
+#include "Utils/String.hpp"
 
 // Should not be needed, Menu should call methods from other classes to launch maps and challenges and so on
 #include "Level/Awards.hpp"
@@ -283,7 +284,7 @@ void Menu::drawItems()
 
 void Menu::updateSettingsMenu()
 {
-    std::string sbuf = std::string("Resolution: ") + to_string(newscreenwidth) + "*" + to_string(newscreenheight);
+    std::string sbuf = std::string("Resolution: ") + rep_to_string(newscreenwidth) + "*" + rep_to_string(newscreenheight);
     if (((float)newscreenwidth <= (float)newscreenheight * 1.61) && ((float)newscreenwidth >= (float)newscreenheight * 1.59)) {
         sbuf += " (widescreen)";
     }
@@ -299,8 +300,8 @@ void Menu::updateSettingsMenu()
     setText(5, decals ? "Decals: Enabled (slower)" : "Decals: Disabled");
     setText(6, musictoggle ? "Music: Enabled" : "Music: Disabled");
     setText(9, invertmouse ? "Invert mouse: Yes" : "Invert mouse: No");
-    setText(10, std::string("Mouse Speed: ") + to_string(int(usermousesensitivity * 5)));
-    setText(11, std::string("Volume: ") + to_string(int(volume * 100)) + "%");
+    setText(10, std::string("Mouse Speed: ") + rep_to_string(int(usermousesensitivity * 5)));
+    setText(11, std::string("Volume: ") + rep_to_string(int(volume * 100)) + "%");
     setText(13, showdamagebar ? "Damage Bar: On" : "Damage Bar: Off");
     if ((newdetail == detail) && (newscreenheight == (int)screenheight) && (newscreenwidth == (int)screenwidth)) {
         setText(8, "Back");
@@ -312,7 +313,7 @@ void Menu::updateSettingsMenu()
 void Menu::updateStereoConfigMenu()
 {
     setText(0, std::string("Stereo mode: ") + StereoModeName(newstereomode));
-    setText(1, std::string("Stereo separation: ") + to_string(stereoseparation));
+    setText(1, std::string("Stereo separation: ") + rep_to_string(stereoseparation));
     setText(2, std::string("Reverse stereo: ") + (stereoreverse ? "Yes" : "No"));
 }
 
@@ -455,20 +456,20 @@ void Menu::Load()
     case 9:
         for (int i = 0; i < numchallengelevels; i++) {
             string name = "Level ";
-            name += to_string(i + 1);
+            name += rep_to_string(i + 1);
             if (name.size() < 17) {
                 name.append((17 - name.size()), ' ');
             }
-            name += to_string(int(Account::active().getHighScore(i)));
+            name += rep_to_string(int(Account::active().getHighScore(i)));
             if (name.size() < 32) {
                 name.append((32 - name.size()), ' ');
             }
             int fasttime = (int)round(Account::active().getFastTime(i));
-            name += to_string(int((fasttime - fasttime % 60) / 60));
+            name += rep_to_string(int((fasttime - fasttime % 60) / 60));
             name += ":";
             if (fasttime % 60 < 10)
                 name += "0";
-            name += to_string(fasttime % 60);
+            name += rep_to_string(fasttime % 60);
 
             addButton(i, name, 10, 400 - i * 25, i > Account::active().getProgress() ? 0.5 : 1, 0, 0);
         }
@@ -481,8 +482,8 @@ void Menu::Load()
         addLabel(1, "You have avenged your family and", 140, 300);
         addLabel(2, "restored peace to the island of Lugaru.", 110, 270);
         addButton(3, "Back", 10, 10);
-        addLabel(4, string("Your score:         ") + to_string((int)Account::active().getCampaignScore()), 190, 200);
-        addLabel(5, string("Highest score:      ") + to_string((int)Account::active().getCampaignHighScore()), 190, 180);
+        addLabel(4, string("Your score:         ") + rep_to_string((int)Account::active().getCampaignScore()), 190, 200);
+        addLabel(5, string("Highest score:      ") + rep_to_string((int)Account::active().getCampaignHighScore()), 190, 180);
     }
     break;
     case 18:
