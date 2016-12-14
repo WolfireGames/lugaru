@@ -30,6 +30,15 @@ if(APPLE)
         "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked. Set to empty string for default value")
     set(CMAKE_OSX_SYSROOT "/Developer/SDKs/MacOSX10.9.sdk" CACHE PATH
         "The product will be built against the headers and libraries located inside the indicated SDK.")
+
+    SET(PLATFORM_PREFIX             "macosx")
+    
+    SET(BIN_RPATH "@executable_path/../Frameworks")
+
+    SET(CMAKE_SKIP_BUILD_RPATH              TRUE)
+    SET(CMAKE_BUILD_WITH_INSTALL_RPATH      TRUE)
+    SET(CMAKE_INSTALL_RPATH                 ${BIN_RPATH})
+    SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH   FALSE)
 endif(APPLE)
 
 option(BUILD_SERVER "Build server" Off)
@@ -182,12 +191,21 @@ else(WIN32)
 endif(WIN32)
 
 find_package(SDL2 REQUIRED)
+
+if(APPLE)
+   find_library(PNG_STATIC_LIBRARY libpng.a)
+   find_library(JPEG_STATIC_LIBRARY libjpeg.a)
+   find_library(OGG_STATIC_LIBRARY libogg.a)
+   find_library(VORBIS_STATIC_LIBRARY libvorbis.a)
+   find_library(VORBISFILE_STATIC_LIBRARY libvorbisfile.a)
+   find_library(VORBISENC_STATIC_LIBRARY libvorbisenc.a)
+   find_library(Z_STATIC_LIBRARY libz.a /usr/local/opt/zlib/lib/)
+endif()
+
 find_package(PNG REQUIRED)
 find_package(JPEG REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(OggVorbis REQUIRED)
-
-message("SDL include dir ${SDL2_INCLUDE_DIR}" )
 
 include_directories(
     ${OPENAL_INCLUDE_DIR}
@@ -201,10 +219,11 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/Source
 )
 
-message( "SDL LIB ${SDL2_LIBRARY}" )
-
-set(LUGARU_LIBS ${OPENAL_LIBRARY} ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_LIBRARY} ${OPENGL_LIBRARIES} ${VORBISFILE_LIBRARY} ${OGG_LIBRARY} ${PLATFORM_LIBS})
-
+if(APPLE)
+	set(LUGARU_LIBS ${OPENAL_LIBRARY} ${PNG_STATIC_LIBRARY} ${JPEG_STATIC_LIBRARY} ${Z_STATIC_LIBRARY} ${SDL2_LIBRARY} ${OPENGL_LIBRARIES} ${VORBIS_STATIC_LIBRARY} ${VORBISENC_STATIC_LIBRARY} ${VORBISFILE_STATIC_LIBRARY} ${OGG_STATIC_LIBRARY} ${PLATFORM_LIBS})
+else()
+	set(LUGARU_LIBS ${OPENAL_LIBRARY} ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_LIBRARY} ${OPENGL_LIBRARIES} ${VORBISFILE_LIBRARY} ${OGG_LIBRARY} ${PLATFORM_LIBS})
+endif()
 
 ### Definitions
 
@@ -339,6 +358,7 @@ IF(DO_DIST_ARCHIVE)
 	 ADD_CUSTOM_TARGET( CreateMacOSXAppStructure ALL
              COMMAND "mkdir" "-p" "${APPLE_APP_FOLDER}"
              COMMAND "mkdir" "-p" "${APPLE_APP_FOLDER}/Contents"
+             COMMAND "mkdir" "-p" "${APPLE_APP_FOLDER}/Contents/Frameworks"
              COMMAND "mkdir" "-p" "${APPLE_APP_FOLDER}/Contents/MacOS"
              COMMAND "mkdir" "-p" "${APPLE_APP_FOLDER}/Contents/Resources"
              WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
@@ -351,16 +371,25 @@ IF(DO_DIST_ARCHIVE)
 	
         ADD_DEPENDENCIES( MacOSXAppAddBinary
              CreateMacOSXAppStructure
+             lugaru 
         )
 
 	ADD_CUSTOM_TARGET( MacOSXAppAddData ALL
-	     COMMAND "cp" "-r" "Data" "${APPLE_APP_FOLDER}/Data"
+	     COMMAND "cp" "-r" "Data" "${APPLE_APP_FOLDER}/"
 	     COMMAND "cp" "Dist/OSX/Info.plist" "${APPLE_APP_FOLDER}/Contents/"
 	     COMMAND "cp" "Dist/OSX/Lugaru.icns" "${APPLE_APP_FOLDER}/Contents/Resources/"
              WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 	)
 
         ADD_DEPENDENCIES( MacOSXAppAddData
+             CreateMacOSXAppStructure
+        )
+
+	ADD_CUSTOM_TARGET( MacOSXAppAddFrameworks ALL
+             COMMAND "cp" "-r" "/Library/Frameworks/SDL2.framework" "${APPLE_APP_FOLDER}/Contents/Frameworks/"
+	)
+
+        ADD_DEPENDENCIES( MacOSXAppAddFrameworks
              CreateMacOSXAppStructure
         )
 
@@ -373,6 +402,7 @@ IF(DO_DIST_ARCHIVE)
              CreateMacOSXAppStructure
              MacOSXAppAddData
              MacOSXAppAddBinary
+	     MacOSXAppAddFrameworks
         )
 
     ENDIF()

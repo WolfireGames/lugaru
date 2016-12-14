@@ -37,7 +37,15 @@ link to run the game.
 ## Mac OSX
 
 The instructions should be similar to the GNU/Linux ones, but have not been
-tested in a Mac environment recently.
+tested in a Mac environment recently. Note that the MacOSX build explicitally 
+requires Zlib, libjpeg, libvorbis, libogg, libvorbisfiles to be installed with 
+static libs for static runtime linking, making the .app portable. If installed 
+via brew, this should be the case as is of writing this. 
+
+SDL2 must be installed as a framework, suggested from SDL.org official build.
+Currently the cmake file assumes it's placed in /Library/Frameworks/. The reason 
+the framework variant is required is for bundling in .app file to make the resulting 
+application portable.
 
 ## Windows
 
