@@ -36,6 +36,8 @@ along with Lugaru.  If not, see <http://www.gnu.org/licenses/>.
 #include <windows.h>
 #endif
 
+#include <cstdio>
+
 const std::string Folders::dataDir = DATA_DIR;
 
 std::string Folders::getScreenshotDir()

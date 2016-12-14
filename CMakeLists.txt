@@ -3,8 +3,10 @@ project(lugaru)
 cmake_minimum_required(VERSION 2.8.7) #Steam runtime version
 cmake_policy(SET CMP0004 OLD)
 
-include(FindPkgConfig)
-include(GNUInstallDirs)
+if(UNIX)
+	include(FindPkgConfig)
+	include(GNUInstallDirs)
+endif()
 
 ### Helpers
 
@@ -22,7 +24,22 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 message("CMake build type: ${CMAKE_BUILD_TYPE}")
 
-set(CMAKE_CXX_FLAGS "-Wall -Wno-parentheses -pedantic --std=gnu++11 ${CMAKE_CXX_FLAGS}")
+if(MINGW)
+    add_definitions( -DMINGW )
+endif()
+
+if(WIN32)
+    add_definitions( -DWINDOWS )
+endif()
+
+if(MINGW AND WIN32)
+    #vorbis header wants fseeko64 
+    set(CMAKE_CXX_FLAGS "-Wall -Wno-parentheses -pedantic --std=gnu++11 ${CMAKE_CXX_FLAGS}")
+else()
+    set(CMAKE_CXX_FLAGS "--std=c++11 ${CMAKE_CXX_FLAGS}")
+endif()
+
+set(CMAKE_CXX_FLAGS "-Wall -Wno-parentheses -pedantic ${CMAKE_CXX_FLAGS}")
 
 if(APPLE)
     set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for OSX")
@@ -186,13 +203,19 @@ find_package(OpenGL REQUIRED)
 
 # Windows is funky about OpenAL detection
 if(WIN32)
-    pkg_check_modules(OPENAL openal REQUIRED)
+    if(UNIX)
+        pkg_check_modules(OPENAL openal REQUIRED)
+    elseif(MINGW)
+    	find_package(OpenAL REQUIRED)
+    endif()
     set(OPENAL_LIBRARY ${OPENAL_LIBRARIES})
 else(WIN32)
     find_package(OpenAL REQUIRED)
 endif(WIN32)
 
 find_package(SDL2 REQUIRED)
+
+message( "SDL2 path ${SDL2_INCLUDE_DIR}" )
 
 if(APPLE)
    find_library(PNG_STATIC_LIBRARY libpng.a)
@@ -202,6 +225,16 @@ if(APPLE)
    find_library(VORBISFILE_STATIC_LIBRARY libvorbisfile.a)
    find_library(VORBISENC_STATIC_LIBRARY libvorbisenc.a)
    find_library(Z_STATIC_LIBRARY libz.a /usr/local/opt/zlib/lib/)
+   set(USE_STATIC_LIBS True)
+elseif(MINGW AND WIN32)
+   find_library(PNG_STATIC_LIBRARY libpng.a)
+   find_library(JPEG_STATIC_LIBRARY libjpeg.a)
+   find_library(OGG_STATIC_LIBRARY libogg.a)
+   find_library(VORBIS_STATIC_LIBRARY libvorbis.a)
+   find_library(VORBISFILE_STATIC_LIBRARY libvorbisfile.a)
+   find_library(VORBISENC_STATIC_LIBRARY libvorbisenc.a)
+   find_library(Z_STATIC_LIBRARY libzlibstatic.a)
+   set(USE_STATIC_LIBS True)
 endif()
 
 find_package(PNG REQUIRED)
@@ -221,11 +254,13 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/Source
 )
 
-if(APPLE)
-	set(LUGARU_LIBS ${OPENAL_LIBRARY} ${PNG_STATIC_LIBRARY} ${JPEG_STATIC_LIBRARY} ${Z_STATIC_LIBRARY} ${SDL2_LIBRARY} ${OPENGL_LIBRARIES} ${VORBIS_STATIC_LIBRARY} ${VORBISENC_STATIC_LIBRARY} ${VORBISFILE_STATIC_LIBRARY} ${OGG_STATIC_LIBRARY} ${PLATFORM_LIBS})
+if(USE_STATIC_LIBS)
+	set(LUGARU_LIBS ${OPENAL_LIBRARY} ${PNG_STATIC_LIBRARY} ${JPEG_STATIC_LIBRARY} ${Z_STATIC_LIBRARY} ${SDL2_LIBRARY} ${OPENGL_LIBRARIES} ${VORBISENC_STATIC_LIBRARY} ${VORBISFILE_STATIC_LIBRARY} ${VORBIS_STATIC_LIBRARY} ${OGG_STATIC_LIBRARY} ${PLATFORM_LIBS})
 else()
 	set(LUGARU_LIBS ${OPENAL_LIBRARY} ${PNG_LIBRARY} ${JPEG_LIBRARY} ${ZLIB_LIBRARIES} ${SDL2_LIBRARY} ${OPENGL_LIBRARIES} ${VORBISFILE_LIBRARY} ${OGG_LIBRARY} ${PLATFORM_LIBS})
 endif()
+
+message( "Libs: ${LUGARU_LIBS}" )
 
 ### Definitions
 
@@ -412,12 +447,44 @@ IF(DO_DIST_ARCHIVE)
         )
 
     ENDIF()
-    IF(WIN32)
-#	    FIND_PROGRAM(SEVEN_ZIP NAMES 7z PATHS "C:/Program Files/7-Zip")
-#        ADD_CUSTOM_TARGET( GenerateDistArchive ALL 
-#            COMMAND ${SEVEN_ZIP} "a" "-mTAR" "\"${DIST_ARCHIVE}\"" "./"
-#            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${WIN32_DIST_FOLDER}"
-#        )
+    IF(WIN32 AND MINGW)
+	FIND_PROGRAM(SEVEN_ZIP NAMES 7z PATHS "C:/Program Files/7-Zip")
+	FIND_FILE( SDL2_DLL NAMES SDL2.dll PATHS "C:/SDL2/i686-w64-mingw32/bin" )
+	message("xcopy ${SDL2_DLL} .")
+	ADD_CUSTOM_TARGET( CopyDLLFiles ALL
+            COMMAND "cmake" "-E" "copy" "${SDL2_DLL}" "."
+	    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+	)
+
+	ADD_CUSTOM_TARGET( CopyDocFiles ALL 
+            COMMAND "cmake" "-E" "copy_if_different"
+                  AUTHORS
+                  CONTENT-LICENSE.txt
+                  COPYING.txt
+                  DEVTOOLS.txt
+                  README.md
+		  "${CMAKE_BINARY_DIR}/"
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+	)
+
+        ADD_CUSTOM_TARGET( GenerateDistArchive ALL 
+            COMMAND ${SEVEN_ZIP} "a" "-mTAR" "\"${DIST_ARCHIVE}\"" 
+	        "lugaru.exe"
+	        "Data"
+	        "SDL2.dll"
+	        AUTHORS
+	        CONTENT-LICENSE.txt
+	        COPYING.txt
+	        DEVTOOLS.txt
+	        README.md
+            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+        )
+
+        ADD_DEPENDENCIES( GenerateDistArchive
+		CopyDLLFiles
+		CopyDocFiles
+        )
+
     ENDIF()
     ADD_DEPENDENCIES( GenerateDistArchive
         lugaru
