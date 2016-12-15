@@ -446,9 +446,15 @@ IF(DO_DIST_ARCHIVE)
     IF(WIN32 AND MINGW)
 	FIND_PROGRAM(SEVEN_ZIP NAMES 7z PATHS "C:/Program Files/7-Zip")
 	FIND_FILE( SDL2_DLL NAMES SDL2.dll PATHS "C:/SDL2/i686-w64-mingw32/bin" )
+	FIND_FILE( LIBGCC_DLL NAMES "libgcc_s_dw2-1.dll" PATHS "C:/MinGW/bin" )
+	FIND_FILE( LIBSTDC_DLL NAMES "libstdc++-6.dll" PATHS "C:/MinGW/bin" )
 	message("xcopy ${SDL2_DLL} .")
 	ADD_CUSTOM_TARGET( CopyDLLFiles ALL
-            COMMAND "cmake" "-E" "copy" "${SDL2_DLL}" "."
+            COMMAND "cmake" "-E" "copy" 
+	    "${SDL2_DLL}" 
+            "${LIBGCC_DLL}"
+	    "${LIBSTDC_DLL}"
+	    "."
 	    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
 	)
 
@@ -468,6 +474,8 @@ IF(DO_DIST_ARCHIVE)
 	        "lugaru.exe"
 	        "Data"
 	        "SDL2.dll"
+		"libgcc_s_dw2-1.dll"
+                "libstdc++-6.dll"
 	        AUTHORS
 	        CONTENT-LICENSE.txt
 	        COPYING.txt
