@@ -1,4 +1,4 @@
-project(lugaru)
+project(Lugaru)
 
 cmake_minimum_required(VERSION 2.8.7) #Steam runtime version
 cmake_policy(SET CMP0004 OLD)
@@ -265,12 +265,12 @@ message( "Libs: ${LUGARU_LIBS}" )
 ### Definitions
 
 if(WIN32)
-    add_executable(lugaru ${LUGARU_SRCS} ${LUGARU_H} lugaru_resource.obj)
+    add_executable(Lugaru ${LUGARU_SRCS} ${LUGARU_H} lugaru_resource.obj)
 else(WIN32)
-    add_executable(lugaru ${LUGARU_SRCS} ${LUGARU_H})
+    add_executable(Lugaru ${LUGARU_SRCS} ${LUGARU_H})
 endif(WIN32)
 
-target_link_libraries(lugaru ${LUGARU_LIBS})
+target_link_libraries(Lugaru ${LUGARU_LIBS})
 
 if(WIN32)
     add_definitions(-DBinIO_STDINT_HEADER=<stdint.h>)
@@ -306,7 +306,7 @@ if(PERFORM_INSTALL)
     # Actual installation instructions
 
     if(WIN32)
-        install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/lugaru.exe DESTINATION ${CMAKE_INSTALL_PREFIX})
+        install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/Lugaru.exe DESTINATION ${CMAKE_INSTALL_PREFIX})
         install(DIRECTORY ${CMAKE_SOURCE_DIR}/Data DESTINATION ${CMAKE_INSTALL_PREFIX})
         if(MINGW)
             # Based off Mageia/Fedora MinGW toolchain, might not work on other distros or Windows
@@ -335,7 +335,7 @@ if(PERFORM_INSTALL)
         if(SYSTEM_INSTALL)
             add_definitions(-DDATA_DIR="${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT_NAME}")
             set(LUGARU_DOCDIR ${CMAKE_INSTALL_DOCDIR})
-            install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/lugaru DESTINATION ${CMAKE_INSTALL_BINDIR})
+            install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/Lugaru DESTINATION ${CMAKE_INSTALL_BINDIR})
             # Trailing '/' is significant, it installs and _renames_ Data/ as the destination folder
             install(DIRECTORY ${CMAKE_SOURCE_DIR}/Data/ DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME})
             install(FILES ${CMAKE_SOURCE_DIR}/Dist/lugaru.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/appdata)
@@ -344,13 +344,13 @@ if(PERFORM_INSTALL)
             install(FILES ${CMAKE_SOURCE_DIR}/Dist/lugaru.6 DESTINATION ${CMAKE_INSTALL_MANDIR}/man6)
         else(SYSTEM_INSTALL)
             message("You are building Lugaru without having enabled the SYSTEM_INSTALL option. It will default to looking for the data in the 'Data' directory next to the binary.")
-            install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/lugaru DESTINATION ${CMAKE_INSTALL_PREFIX})
+            install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/Lugaru DESTINATION ${CMAKE_INSTALL_PREFIX})
             install(DIRECTORY ${CMAKE_SOURCE_DIR}/Data DESTINATION ${CMAKE_INSTALL_PREFIX})
         endif(SYSTEM_INSTALL)
     endif(LINUX)
 
     if(APPLE)
-        install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/lugaru DESTINATION ${LUGARU_BINDIR})
+        install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/Lugaru DESTINATION ${LUGARU_BINDIR})
         install(DIRECTORY ${CMAKE_SOURCE_DIR}/Data DESTINATION ${LUGARU_APP_ROOT})
         install(FILES ${CMAKE_SOURCE_DIR}/Dist/OSX/Lugaru.icns DESTINATION ${LUGARU_RESDIR})
         install(FILES ${CMAKE_SOURCE_DIR}/Dist/OSX/Info.plist DESTINATION ${LUGARU_APP_ROOT}/Contents)
@@ -372,7 +372,7 @@ IF(DO_DIST_ARCHIVE)
     IF(LINUX)
         ADD_CUSTOM_TARGET( GenerateDistArchive ALL 
             COMMAND "tar" "-chf" "\"${DIST_ARCHIVE}\"" 
-              "lugaru" 
+              "Lugaru" 
               "Data/"
             WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
         )
@@ -402,13 +402,13 @@ IF(DO_DIST_ARCHIVE)
 	)
 
 	ADD_CUSTOM_TARGET( MacOSXAppAddBinary ALL
-	     COMMAND "cp" "lugaru" "${APPLE_APP_FOLDER}/Contents/MacOS/"
+	     COMMAND "cp" "Lugaru" "${APPLE_APP_FOLDER}/Contents/MacOS/"
              WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
 	)
 	
         ADD_DEPENDENCIES( MacOSXAppAddBinary
              CreateMacOSXAppStructure
-             lugaru 
+             Lugaru 
         )
 
 	ADD_CUSTOM_TARGET( MacOSXAppAddData ALL
@@ -483,6 +483,6 @@ IF(DO_DIST_ARCHIVE)
 
     ENDIF()
     ADD_DEPENDENCIES( GenerateDistArchive
-        lugaru
+        Lugaru
     )
 ENDIF()
