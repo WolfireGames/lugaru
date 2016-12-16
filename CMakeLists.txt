@@ -382,10 +382,10 @@ IF(DO_DIST_ARCHIVE)
         )
         ADD_CUSTOM_TARGET( GenerateDistArchive2 ALL
             COMMAND "tar" "-rhf" "\"${DIST_ARCHIVE}\"" 
+              "Docs/"
               "AUTHORS"
               "CONTENT-LICENSE.txt"
               "COPYING.txt"
-              "DEVTOOLS.txt"
               "README.md"
             WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
         )
@@ -419,7 +419,12 @@ IF(DO_DIST_ARCHIVE)
 	     COMMAND "cp" "-r" "Data" "${APPLE_APP_FOLDER}/"
 	     COMMAND "cp" "Dist/OSX/Info.plist" "${APPLE_APP_FOLDER}/Contents/"
 	     COMMAND "cp" "Dist/OSX/Lugaru.icns" "${APPLE_APP_FOLDER}/Contents/Resources/"
-             WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+	     COMMAND "cp" "-r" "Docs" "${APPLE_APP_FOLDER}/Contents/Resources/"
+	     COMMAND "cp" "AUTHORS" "${APPLE_APP_FOLDER}/Contents/Resources/"
+	     COMMAND "cp" "CONTENT-LICENSE.txt" "${APPLE_APP_FOLDER}/Contents/Resources/"
+	     COMMAND "cp" "COPYING.txt" "${APPLE_APP_FOLDER}/Contents/Resources/"
+	     COMMAND "cp" "README.md" "${APPLE_APP_FOLDER}/Contents/Resources/"
+	     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 	)
 
         ADD_DEPENDENCIES( MacOSXAppAddData
@@ -464,10 +469,10 @@ IF(DO_DIST_ARCHIVE)
 
 	ADD_CUSTOM_TARGET( CopyDocFiles ALL 
             COMMAND "cmake" "-E" "copy_if_different"
+		  "Docs"
                   AUTHORS
                   CONTENT-LICENSE.txt
                   COPYING.txt
-                  DEVTOOLS.txt
                   README.md
 		  "${CMAKE_BINARY_DIR}/"
             WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
@@ -480,10 +485,10 @@ IF(DO_DIST_ARCHIVE)
 	        "SDL2.dll"
 		"libgcc_s_dw2-1.dll"
                 "libstdc++-6.dll"
+		"Docs"
 	        AUTHORS
 	        CONTENT-LICENSE.txt
 	        COPYING.txt
-	        DEVTOOLS.txt
 	        README.md
             WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
         )
