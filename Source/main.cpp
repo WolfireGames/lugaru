@@ -563,6 +563,7 @@ static inline void chdirToAppPath(const char *argv0)
                 *ptr = '\0';
         }
 #endif
+        printf("Application workdir: %s\n", dir);
         chdir(dir);
         free(dir);
     }
