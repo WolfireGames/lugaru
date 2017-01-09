@@ -47,11 +47,6 @@ std::string Folders::getScreenshotDir()
     return screenshotDir;
 }
 
-std::string Folders::getResourcePath(std::string filepath)
-{
-    return dataDir + '/' + filepath;
-}
-
 std::string Folders::getUserDataPath()
 {
     std::string userDataPath;

@@ -1772,20 +1772,19 @@ void Person::RagDoll(bool checkcollision)
         }
 
         if (checkcollision) {
-            XYZ average;
             XYZ lowpoint;
             XYZ colpoint;
-            int howmany;
-            average = 0;
-            howmany = 0;
-            for (unsigned j = 0; j < skeleton.joints.size(); j++) {
-                average += skeleton.joints[j].position;
-                howmany++;
-            }
-            average /= howmany;
-            coords += average * scale;
-            for (unsigned j = 0; j < skeleton.joints.size(); j++) {
-                skeleton.joints[j].position -= average;
+            if (!skeleton.joints.empty()) {
+                XYZ average;
+                average = 0;
+                for (unsigned j = 0; j < skeleton.joints.size(); j++) {
+                    average += skeleton.joints[j].position;
+                }
+                average /= skeleton.joints.size();
+                coords += average * scale;
+                for (unsigned j = 0; j < skeleton.joints.size(); j++) {
+                    skeleton.joints[j].position -= average;
+                }
             }
 
             whichpatchx = coords.x / (terrain.size / subdivision * terrain.scale);
@@ -2148,7 +2147,7 @@ void Person::DoAnimations()
             animCurrent = animTarget;
             frameTarget++;
 
-            if (animTarget == removeknifeanim && Animation::animations[animTarget].frames[frameCurrent].label == 5) {
+            if (animTarget == removeknifeanim && currentFrame().label == 5) {
                 for (unsigned i = 0; i < weapons.size(); i++) {
                     if (weapons[i].owner == -1)
                         if (distsqflat(&coords, &weapons[i].position) < 4 && weaponactive == -1) {
@@ -2163,7 +2162,7 @@ void Person::DoAnimations()
                 }
             }
 
-            if (animTarget == crouchremoveknifeanim && Animation::animations[animTarget].frames[frameCurrent].label == 5) {
+            if (animTarget == crouchremoveknifeanim && currentFrame().label == 5) {
                 for (unsigned i = 0; i < weapons.size(); i++) {
                     bool willwork = true;
                     if (weapons[i].owner != -1)
@@ -2239,7 +2238,7 @@ void Person::DoAnimations()
                 }
             }
 
-            if (animCurrent == drawleftanim && Animation::animations[animTarget].frames[frameCurrent].label == 5) {
+            if (animCurrent == drawleftanim && currentFrame().label == 5) {
                 if (weaponactive == -1)
                     weaponactive = 0;
                 else if (weaponactive == 0) {
@@ -3735,7 +3734,7 @@ void Person::DoAnimations()
 
 
             //Animation end
-            if (frameTarget > int(Animation::animations[animCurrent].frames.size()) - 1) {
+            if (frameTarget >= int(Animation::animations[animCurrent].frames.size())) {
                 frameTarget = 0;
                 if (wasStop()) {
                     animTarget = getIdle();
@@ -4162,9 +4161,9 @@ void Person::DoAnimations()
                     /* FIXME - mixed of target and current here, is that intended? */
                     target += multiplier * Animation::animations[animTarget].frames[frameCurrent].speed * speed * 1.7 * tempspeed / (speed * 45 * scale);
                 }
-            } else if (transspeed)
+            } else if (transspeed) {
                 target += multiplier * transspeed * speed * 2;
-            else {
+            } else {
                 if (!isRun() || !wasRun()) {
                     if (targetFrame().speed > currentFrame().speed)
                         target += multiplier * targetFrame().speed * 2;
@@ -4180,6 +4179,11 @@ void Person::DoAnimations()
                 frameCurrent = frameTarget;
                 target = 1;
             }
+
+            if (frameCurrent >= int(Animation::animations[animCurrent].frames.size())) {
+                frameCurrent = Animation::animations[animCurrent].frames.size() - 1;
+            }
+
             oldrot = rot;
             rot = targetrot * target;
             yaw += rot - oldrot;
@@ -4188,9 +4192,7 @@ void Person::DoAnimations()
                 oldrot = 0;
                 targetrot = 0;
             }
-            if (frameCurrent >= int(Animation::animations[animCurrent].frames.size())) {
-                frameCurrent = Animation::animations[animCurrent].frames.size() - 1;
-            }
+
             if (animCurrent != oldanimCurrent || animTarget != oldanimTarget || ((frameCurrent != oldframeCurrent || frameTarget != oldframeTarget) && !calcrot)) {
                 //Old rotates
                 for (unsigned i = 0; i < skeleton.joints.size(); i++) {
@@ -4287,8 +4289,6 @@ void Person::DoStuff()
     static XYZ flatvelocity;
     static float flatvelspeed;
     static int i, l;
-    static XYZ average;
-    static int howmany;
     static int bloodsize;
     static int startx, starty, endx, endy;
     static GLubyte color;
@@ -4387,7 +4387,7 @@ void Person::DoStuff()
     }
     while (flamedelay < 0 && onfire) {
         flamedelay += .006;
-        howmany = fabs(Random() % (skeleton.joints.size()));
+        int howmany = fabs(Random() % (skeleton.joints.size()));
         if (skeleton.free) {
             flatvelocity = skeleton.joints[howmany].velocity * scale / 2;
             flatfacing = skeleton.joints[howmany].position * scale + coords;
@@ -4400,7 +4400,7 @@ void Person::DoStuff()
 
     while (flamedelay < 0 && !onfire && tutoriallevel == 1 && id != 0) {
         flamedelay += .05;
-        howmany = fabs(Random() % (skeleton.joints.size()));
+        int howmany = fabs(Random() % (skeleton.joints.size()));
         if (skeleton.free) {
             flatvelocity = skeleton.joints[howmany].velocity * scale / 2;
             flatfacing = skeleton.joints[howmany].position * scale + coords;
@@ -5002,18 +5002,19 @@ void Person::DoStuff()
             award_bonus(id, deepimpact);
         DoDamage(damageamount / ((protectionhigh + protectionhead + protectionlow) / 3));
 
+        XYZ average;
         average = 0;
-        howmany = 0;
-        for (unsigned j = 0; j < skeleton.joints.size(); j++) {
-            average += skeleton.joints[j].position;
-            howmany++;
+        if (!skeleton.joints.empty()) {
+            for (unsigned j = 0; j < skeleton.joints.size(); j++) {
+                average += skeleton.joints[j].position;
+            }
+            average /= skeleton.joints.size();
+            coords += average * scale;
+            for (unsigned j = 0; j < skeleton.joints.size(); j++) {
+                skeleton.joints[j].position -= average;
+            }
+            average /= multiplier;
         }
-        average /= howmany;
-        coords += average * scale;
-        for (unsigned j = 0; j < skeleton.joints.size(); j++) {
-            skeleton.joints[j].position -= average;
-        }
-        average /= multiplier;
 
         velocity = 0;
         for (unsigned i = 0; i < skeleton.joints.size(); i++) {
@@ -5316,7 +5317,7 @@ void Person::DoStuff()
                                 addEnvSound(coords, 4 * findLength(&velocity));
                             }
 
-                            int howmany;
+                            int howmany = 0;
                             if (environment == grassyenvironment)
                                 howmany = findLength(&velocity) * 4;
                             if (environment == snowyenvironment)
@@ -5376,7 +5377,7 @@ void Person::DoStuff()
                                 addEnvSound(coords, 4 * findLength(&velocity));
                             }
 
-                            int howmany;
+                            int howmany = 0;
                             if (environment == grassyenvironment)
                                 howmany = findLength(&velocity) * 4;
                             if (environment == snowyenvironment)

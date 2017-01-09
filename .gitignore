@@ -9,6 +9,8 @@ build*
 *.aps
 lugaru
 lugaru.exe
+Lugaru
+Lugaru.exe
 cmake_install.cmake
 cmake-build
 CMakeFiles

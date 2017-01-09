@@ -34,7 +34,7 @@ endif()
 
 if(MINGW AND WIN32)
     #vorbis header wants fseeko64 
-    set(CMAKE_CXX_FLAGS "--std=gnu++11 ${CMAKE_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS "-Wall -Wno-parentheses -pedantic --std=gnu++11 ${CMAKE_CXX_FLAGS}")
 else()
     set(CMAKE_CXX_FLAGS "--std=c++11 ${CMAKE_CXX_FLAGS}")
 endif()
@@ -71,7 +71,7 @@ if(LINUX)
     option(SYSTEM_INSTALL "Enable system-wide installation, with hardcoded data directory defined with CMAKE_INSTALL_DATADIR" OFF)
 endif(LINUX)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/Modules/")
 
 
 ### Sources
@@ -300,7 +300,7 @@ if(PERFORM_INSTALL)
     if(APPLE)
         set(LUGARU_APP_ROOT ${CMAKE_INSTALL_PREFIX}/Lugaru.app)
         set(LUGARU_BINDIR ${LUGARU_APP_ROOT}/Contents/MacOS)
-        set(LUGARU_RESDIR ${LUGARU_APP_ROOT}/Resources)
+        set(LUGARU_RESDIR ${LUGARU_APP_ROOT}/Contents/Resources)
     endif(APPLE)
 
     # Actual installation instructions
@@ -357,12 +357,15 @@ if(PERFORM_INSTALL)
     endif(APPLE)
 
     # Documentation
-
     install(FILES ${CMAKE_SOURCE_DIR}/AUTHORS
                   ${CMAKE_SOURCE_DIR}/CONTENT-LICENSE.txt
                   ${CMAKE_SOURCE_DIR}/COPYING.txt
-                  ${CMAKE_SOURCE_DIR}/DEVTOOLS.txt
                   ${CMAKE_SOURCE_DIR}/README.md
+                  ${CMAKE_SOURCE_DIR}/RELEASE-NOTES.md
+                  ${CMAKE_SOURCE_DIR}/Docs/DEVTOOLS.txt
+                  ${CMAKE_SOURCE_DIR}/Docs/README.Empire.txt
+                  ${CMAKE_SOURCE_DIR}/Docs/README.SevenTasks.txt
+                  ${CMAKE_SOURCE_DIR}/Docs/README.Temple.txt
             DESTINATION ${LUGARU_DOCDIR})
 endif(PERFORM_INSTALL)
 
@@ -378,10 +381,10 @@ IF(DO_DIST_ARCHIVE)
         )
         ADD_CUSTOM_TARGET( GenerateDistArchive2 ALL
             COMMAND "tar" "-rhf" "\"${DIST_ARCHIVE}\"" 
+              "Docs/"
               "AUTHORS"
               "CONTENT-LICENSE.txt"
               "COPYING.txt"
-              "DEVTOOLS.txt"
               "README.md"
             WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
         )
@@ -415,7 +418,12 @@ IF(DO_DIST_ARCHIVE)
 	     COMMAND "cp" "-r" "Data" "${APPLE_APP_FOLDER}/"
 	     COMMAND "cp" "Dist/OSX/Info.plist" "${APPLE_APP_FOLDER}/Contents/"
 	     COMMAND "cp" "Dist/OSX/Lugaru.icns" "${APPLE_APP_FOLDER}/Contents/Resources/"
-             WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+	     COMMAND "cp" "-r" "Docs" "${APPLE_APP_FOLDER}/Contents/Resources/"
+	     COMMAND "cp" "AUTHORS" "${APPLE_APP_FOLDER}/Contents/Resources/"
+	     COMMAND "cp" "CONTENT-LICENSE.txt" "${APPLE_APP_FOLDER}/Contents/Resources/"
+	     COMMAND "cp" "COPYING.txt" "${APPLE_APP_FOLDER}/Contents/Resources/"
+	     COMMAND "cp" "README.md" "${APPLE_APP_FOLDER}/Contents/Resources/"
+	     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 	)
 
         ADD_DEPENDENCIES( MacOSXAppAddData
@@ -460,10 +468,10 @@ IF(DO_DIST_ARCHIVE)
 
 	ADD_CUSTOM_TARGET( CopyDocFiles ALL 
             COMMAND "cmake" "-E" "copy_if_different"
+                  "Docs"
                   AUTHORS
                   CONTENT-LICENSE.txt
                   COPYING.txt
-                  DEVTOOLS.txt
                   README.md
 		  "${CMAKE_BINARY_DIR}/"
             WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
@@ -474,12 +482,12 @@ IF(DO_DIST_ARCHIVE)
 	        "lugaru.exe"
 	        "Data"
 	        "SDL2.dll"
-		"libgcc_s_dw2-1.dll"
-                "libstdc++-6.dll"
+            "libgcc_s_dw2-1.dll"
+            "libstdc++-6.dll"
+            "Docs"
 	        AUTHORS
 	        CONTENT-LICENSE.txt
 	        COPYING.txt
-	        DEVTOOLS.txt
 	        README.md
             WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
         )

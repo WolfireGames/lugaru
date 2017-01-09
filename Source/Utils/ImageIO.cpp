@@ -59,21 +59,24 @@ ImageRec::~ImageRec()
 
 bool load_image(const char *file_name, ImageRec &tex)
 {
-    if (visibleloading)
+    if (visibleloading) {
         Game::LoadingScreen();
+    }
 
-    if ( tex.data == NULL )
+    if ( tex.data == NULL ) {
         return false;
+    }
 
     const char *ptr = strrchr((char *)file_name, '.');
     if (ptr) {
-        if (strcasecmp(ptr + 1, "png") == 0)
+        if (strcasecmp(ptr + 1, "png") == 0) {
             return load_png(file_name, tex);
-        else if (strcasecmp(ptr + 1, "jpg") == 0)
+        } else if (strcasecmp(ptr + 1, "jpg") == 0) {
             return load_jpg(file_name, tex);
+        }
     }
 
-    STUBBED("Unsupported image type");
+    std::cerr << "Unsupported image type" << std::endl;
     return false;
 }
 
@@ -81,11 +84,12 @@ bool save_screenshot(const char *file_name)
 {
     const char *ptr = strrchr((char *)file_name, '.');
     if (ptr) {
-        if (strcasecmp(ptr + 1, "png") == 0)
+        if (strcasecmp(ptr + 1, "png") == 0) {
             return save_screenshot_png((Folders::getScreenshotDir() + '/' + file_name).c_str());
+        }
     }
 
-    STUBBED("Unsupported image type");
+    std::cerr << "Unsupported image type" << std::endl;
     return false;
 }
 
@@ -108,10 +112,13 @@ static bool load_jpg(const char *file_name, ImageRec &tex)
     struct my_error_mgr jerr;
     JSAMPROW buffer[1]; /* Output row buffer */
     int row_stride; /* physical row width in output buffer */
+    errno = 0;
     FILE *infile = fopen(file_name, "rb");
 
-    if (infile == NULL)
+    if (infile == NULL) {
+        perror((std::string("Couldn't open file ") + file_name).c_str());
         return false;
+    }
 
     cinfo.err = jpeg_std_error(&jerr.pub);
     jerr.pub.error_exit = my_error_exit;
@@ -158,10 +165,11 @@ static bool load_png(const char *file_name, ImageRec &tex)
     int bit_depth, color_type, interlace_type;
     bool retval = false;
     png_byte **row_pointers = NULL;
+    errno = 0;
     FILE *fp = fopen(file_name, "rb");
 
     if (fp == NULL) {
-        cerr << file_name << " not found" << endl;
+        perror((std::string("Couldn't open file ") + file_name).c_str());
         return false;
     }
 
@@ -241,9 +249,12 @@ static bool save_screenshot_png(const char *file_name)
     png_infop info_ptr = NULL;
     bool retval = false;
 
+    errno = 0;
     fp = fopen(file_name, "wb");
-    if (fp == NULL)
+    if (fp == NULL) {
+        perror((std::string("Couldn't open file ") + file_name).c_str());
         return false;
+    }
 
     png_bytep *row_pointers = new png_bytep[kContextHeight];
     png_bytep screenshot = new png_byte[kContextWidth * kContextHeight * 3];
